@@ -12,7 +12,6 @@ import java.util.Scanner;
 
 public class Main {
     private static final BookDAO bookDB = new TempBookDatabaseDAO();
-
     private static final Scanner eingabe = new Scanner(System.in);
 
     public static void main(String[] args) {
@@ -29,7 +28,7 @@ public class Main {
             System.out.println("6 - Alle Genres Anzeigen");
             System.out.println("9 - Programm beenden");
 
-            int auswahl = 0;
+            int auswahl;
             try {
                 // Benutzereingabe für die Menüauswahl lesen
                 auswahl = eingabe.nextInt();
@@ -39,7 +38,6 @@ public class Main {
                 eingabe.nextLine(); // Rest der Eingabezeile konsumieren
                 continue; // Schleife erneut durchlaufen, um erneute Eingabe zu ermöglichen
             }
-
             // Menüoptionen verarbeiten
             switch (auswahl) {
                 case 1:
@@ -72,13 +70,14 @@ public class Main {
 
 
     private static void createBook() {
-        int bookNumber = 0;
-        Book book = null;
+
+        int bookNumber;
+        Book book;
         while (true) {
             try {
                 // Eingabe einer Buchnummer anfordern
                 System.out.println("Buchnummer zuweisen lassen (0) oder");
-                System.out.print("bitte eine Buchnummer eingeben: ");
+                System.out.print("Bitte eine Buchnummer eingeben: ");
                 bookNumber = eingabe.nextInt();
 
                 if (bookNumber == 0) {
@@ -142,23 +141,29 @@ public class Main {
 
 
         String genreName;
-        Genre genre = null;
+        Genre genre;
 
 // Eingabe des Genres anfordern
         System.out.println("Bitte Genre auswählen: ");
 
         List<Genre> genreList = bookDB.getAllGenre();
-        int genreIndex = 0;
+        if (genreList.isEmpty()) {
+            System.out.println("Es sind keine Genres vorhanden. Bitte legen Sie zuerst ein Genre an.");
+            return;
+        }
+
+        int genreIndex;
 
         while (true) {
-            for (int i = 0; i < genreList.size(); i++) {
-                System.out.println((i + 1) + ": " + genreList.get(i).getGenreName());
+            int index = 1;
+            for (Genre g : genreList) {
+                System.out.println(index + ": " + g.getGenreName());
+                index++;
             }
             try {
                 System.out.print("Ihre Wahl: ");
                 genreIndex = eingabe.nextInt();
                 eingabe.nextLine();
-
                 if (genreIndex >= 1 && genreIndex <= genreList.size()) {
                     genre = genreList.get(genreIndex - 1);
                     System.out.println("Sie haben das Genre '" + genre.getGenreName() + "' gewählt");
@@ -175,8 +180,7 @@ public class Main {
 
         System.out.println();
 
-
-        int year = 0;
+        int year;
         LocalDate currentDate = LocalDate.now();
         int currentYear = currentDate.getYear();
         while (true) {
@@ -188,7 +192,6 @@ public class Main {
                 if (year < 0 || year > currentYear) {
                     System.out.println("Ungültiges Erscheinungsjahr!");
                     System.out.println("Bitte geben Sie ein Jahr zwischen 0 und " + currentYear + " ein.");
-                    continue;
                 } else {
                     break;
                 }
@@ -216,7 +219,7 @@ public class Main {
         while (true) {
             // Buchnummer für das zu aktualisierende Buch vom Benutzer einlesen
             System.out.print("Bitte die Buchnummer des zu aktualisierenden Buchs eingeben: ");
-            int bookNumber = 0;
+            int bookNumber;
             try {
                 bookNumber = eingabe.nextInt();
                 eingabe.nextLine(); // Puffer leeren
@@ -245,7 +248,7 @@ public class Main {
                 String newAuthor = eingabe.nextLine();
 
                 // Erscheinungsjahr (year) für das Buch aktualisieren
-                int year = 0;
+                int year;
                 LocalDate currentDate = LocalDate.now();
                 int currentYear = currentDate.getYear();
                 while (true) {
@@ -258,7 +261,6 @@ public class Main {
                         if (year < 0 || year > currentYear) {
                             System.out.println("Ungültiges Erscheinungsjahr!");
                             System.out.println("Bitte geben Sie ein Jahr zwischen 0 und " + currentYear + " ein.");
-                            continue;
                         } else {
                             break;
                         }
@@ -274,13 +276,10 @@ public class Main {
                     // Verfügbare Genres anzeigen
                     System.out.println("Verfügbare Genres:");
                     List<Genre> genreList = bookDB.getAllGenre();
-                    for (int i = 0; i < genreList.size(); i++) {
-                        Genre genre = genreList.get(i);
-                        System.out.println(genre.getGenreNumber() + ": " + genre.getGenreName());
+                    for(Genre g : genreList){
+                        System.out.println(g.getGenreNumber() + ": " + g.getGenreName());
                     }
-
-
-                    int selectedGenreNumber = 0;
+                    int selectedGenreNumber;
                     while (true) {
                         try {
                             System.out.print("Bitte wählen Sie ein Genre mit der entsprechenden Nummer: ");
@@ -292,12 +291,9 @@ public class Main {
                             eingabe.nextLine(); // Puffer leeren
                         }
                     }
-
-                    // Das ausgewählte Genre anhand der Nummer finden
-                    for (int i = 0; i < genreList.size(); i++) {
-                        Genre genre = genreList.get(i);
-                        if (genre.getGenreNumber() == selectedGenreNumber) {
-                            newGenre = genre;
+                    for (Genre g : genreList) {
+                        if (g.getGenreNumber() == selectedGenreNumber) {
+                            newGenre = g;
                             break;
                         }
                     }
@@ -327,35 +323,72 @@ public class Main {
             }
         }
     }
-        private static void showBook () {
-            // Alle Filme aus der Datenbank abrufen und anzeigen
-            List<Book> bookList = bookDB.getAllBooks();
-            for (int i = 0; i < bookList.size(); i++) {
-                Book book = bookList.get(i);
-                System.out.println(book);
-            }
-        }
 
-        private static void deleteBook () {
-            try {
-                // Buchnummer für das zu löschende Buch vom Benutzer einlesen
-                System.out.print("Bitte die zu löschende Buchnummer eingeben: ");
-                int bookNumber = eingabe.nextInt();
-                eingabe.nextLine(); // Puffer leeren
-                Book book = bookDB.getBookByNumber(bookNumber);
-                if (book != null) {
-                    System.out.println("Achtung. Sie wollen das Buch '" + book.getTitle() + "' löschen.");
-                    System.out.print("Wirklich löschen (j/n)? ");
-                    char auswahl = eingabe.next().toUpperCase().charAt(0);
-                    eingabe.nextLine();
-                    if (auswahl == 'J') {
-                        // Buch aus der Datenbank löschen
-                        if (bookDB.deleteBook(bookNumber)) {
-                            System.out.println("Buch '"
-                                    + book.getTitle()
-                                    + "' wurde gelöscht.");
-                        }
+    private static void showBook() {
+        // Alle Filme aus der Datenbank abrufen und anzeigen
+        List<Book> bookList = bookDB.getAllBooks();
+        for (Book b : bookList) {
+            System.out.println(b);
+        }
+    }
+
+    private static void deleteBook() {
+        try {
+            // Buchnummer für das zu löschende Buch vom Benutzer einlesen
+            System.out.print("Bitte die zu löschende Buchnummer eingeben: ");
+            int bookNumber = eingabe.nextInt();
+            eingabe.nextLine(); // Puffer leeren
+            Book book = bookDB.getBookByNumber(bookNumber);
+            if (book != null) {
+                System.out.println("Achtung. Sie wollen das Buch '" + book.getTitle() + "' löschen.");
+                System.out.print("Wirklich löschen (j/n)? ");
+                char auswahl = eingabe.next().toUpperCase().charAt(0);
+                eingabe.nextLine();
+                if (auswahl == 'J') {
+                    // Buch aus der Datenbank löschen
+                    if (bookDB.deleteBook(bookNumber)) {
+                        System.out.println("Buch '"
+                                + book.getTitle()
+                                + "' wurde gelöscht.");
                     }
+                }
+            }
+        } catch (InputMismatchException e) {
+            // Bei ungültiger Eingabe (z. B. Buchstabe statt Zahl) eine Fehlermeldung ausgeben
+            System.out.println("Ungültige Eingabe. Bitte eine Zahl eingeben.");
+            eingabe.nextLine(); // Rest der Eingabezeile konsumieren
+        }
+    }
+
+    public static void createGenre() {
+        //Genre erstellen
+        int genreNumber;
+        Genre genre;
+
+        while (true) {
+            try {
+                // Eingabe einer Genrenummer anfordern
+                System.out.println("Bitte eine Genrenummer eingeben: ");
+                System.out.println("Wenn Sie 0 eingeben wird automatisch die höchste Genrenummer gewählt!");
+                genreNumber = eingabe.nextInt();
+                eingabe.nextLine(); // Rest der Zeile konsumieren
+
+                // Überprüfen, ob der Benutzer 0 eingegeben hat, um die Genrenummer automatisch zuzuweisen
+                if (genreNumber == 0) {
+                    // Die höchste vorhandene Genrenummer ermitteln und um 1 erhöhen
+                    genreNumber = bookDB.getHighestGenreNumber() + 1;
+                    System.out.println("Wir haben die Genrenummer " + genreNumber +
+                            " für Sie gewählt");
+                }
+
+                // Prüfen, ob das Genre mit der eingegebenen Nummer bereits existiert
+                genre = bookDB.getGenreByNumber(genreNumber);
+
+                if (genre != null) {
+                    // Eine bereits vorhandene Genrenummer wurde gewählt, und das zugehörige Genre wird angezeigt
+                    System.out.println("Die Genrenummer ist bereits vergeben für das Genre '" + genre.getGenreName() + "'");
+                } else {
+                    break; // Schleife beenden, da gültige Eingabe erfolgt ist
                 }
             } catch (InputMismatchException e) {
                 // Bei ungültiger Eingabe (z. B. Buchstabe statt Zahl) eine Fehlermeldung ausgeben
@@ -364,85 +397,47 @@ public class Main {
             }
         }
 
-        public static void createGenre () {
-            //Genre erstellen
-            int genreNumber;
-            Genre genre = null;
 
-            while (true) {
-                try {
-                    // Eingabe einer Genrenummer anfordern
-                    System.out.println("Bitte eine Genrenummer eingeben: ");
-                    System.out.println("Wenn Sie 0 eingeben wird automatisch die höchste Genrenummer gewählt!");
-                    genreNumber = eingabe.nextInt();
-                    eingabe.nextLine(); // Rest der Zeile konsumieren
+        String genreName;
+        while (true) {
+            // Eingabe des Genrenamens
+            System.out.print("Bitte geben Sie das Genre ein: ");
+            genreName = eingabe.nextLine();
 
-                    // Überprüfen, ob der Benutzer 0 eingegeben hat, um die Genrenummer automatisch zuzuweisen
-                    if (genreNumber == 0) {
-                        // Die höchste vorhandene Genrenummer ermitteln und um 1 erhöhen
-                        genreNumber = bookDB.getHighestGenreNumber() + 1;
-                        System.out.println("Wir haben die Genrenummer " + genreNumber +
-                                " für Sie gewählt");
+            // Überprüfen, ob das eingegebene Genre existiert, sonst nachfragen, ob es neu angelegt werden soll
+            genre = bookDB.getGenreByName(genreName);
+
+            if (genre == null) {
+                System.out.print("Unbekanntes Genre '" +
+                        genreName +
+                        "'. Soll dies neu angelegt werden (j/n)?");
+                char auswahl = eingabe.next().toUpperCase().charAt(0);
+                eingabe.nextLine();
+
+                if (auswahl == 'J') {
+                    // Wenn ja, wird ein neues Genre mit der höchsten Genrenummer + 1 angelegt
+                    genre = new Genre(bookDB.getHighestGenreNumber() + 1, genreName);
+
+                    if (bookDB.insertGenre(genre)) {
+                        System.out.println("Genre '"
+                                + genreName
+                                + "' wurde neu angelegt.");
                     }
 
-                    // Prüfen, ob das Genre mit der eingegebenen Nummer bereits existiert
-                    genre = bookDB.getGenreByNumber(genreNumber);
-
-                    if (genre != null) {
-                        // Eine bereits vorhandene Genrenummer wurde gewählt, und das zugehörige Genre wird angezeigt
-                        System.out.println("Die Genrenummer ist bereits vergeben für das Genre '" + genre.getGenreName() + "'");
-                    } else {
-                        break; // Schleife beenden, da gültige Eingabe erfolgt ist
-                    }
-                } catch (InputMismatchException e) {
-                    // Bei ungültiger Eingabe (z. B. Buchstabe statt Zahl) eine Fehlermeldung ausgeben
-                    System.out.println("Ungültige Eingabe. Bitte eine Zahl eingeben.");
-                    eingabe.nextLine(); // Rest der Eingabezeile konsumieren
-                }
-            }
-
-
-            String genreName;
-            while (true) {
-                // Eingabe des Genrenamens
-                System.out.print("Bitte geben Sie das Genre ein: ");
-                genreName = eingabe.nextLine();
-
-                // Überprüfen, ob das eingegebene Genre existiert, sonst nachfragen, ob es neu angelegt werden soll
-                genre = bookDB.getGenreByName(genreName);
-
-                if (genre == null) {
-                    System.out.print("Unbekanntes Genre '" +
-                            genreName +
-                            "'. Soll dies neu angelegt werden (j/n)?");
-                    char auswahl = eingabe.next().toUpperCase().charAt(0);
-                    eingabe.nextLine();
-
-                    if (auswahl == 'J') {
-                        // Wenn ja, wird ein neues Genre mit der höchsten Genrenummer + 1 angelegt
-                        genre = new Genre(bookDB.getHighestGenreNumber() + 1, genreName);
-
-                        if (bookDB.insertGenre(genre)) {
-                            System.out.println("Genre '"
-                                    + genreName
-                                    + "' wurde neu angelegt.");
-                        }
-
-                    } else {
-                        break; // Schleife beenden, da gültige Eingabe erfolgt ist
-                    }
+                } else {
+                    System.out.println("Kein neues Genre angelegt.");
+                    break; // Schleife beenden, da gültige Eingabe erfolgt ist
                 }
             }
         }
-
-        private static void showGenre () {
-            // Alle Filme aus der Datenbank abrufen und anzeigen
-            List<Genre> genreList = bookDB.getAllGenre();
-            for (int i = 0; i < genreList.size(); i++) {
-                Genre genre = genreList.get(i);
-                System.out.println(genre);
-            }
-        }
-
-
     }
+
+    private static void showGenre() {
+        // Alle Filme aus der Datenbank abrufen und anzeigen
+        List<Genre> genreList = bookDB.getAllGenre();
+        for (Genre g : genreList) {
+            System.out.println(g);
+        }
+    }
+
+}
